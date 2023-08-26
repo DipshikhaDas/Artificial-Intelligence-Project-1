@@ -1,0 +1,51 @@
+#gameboard {
+    width: 250px;
+    height: 300px;
+    display: flex;
+    flex-wrap: wrap;
+    border: 2px solid black; /* You can adjust the size and color */
+    /* box-sizing: border-box; */
+}
+
+.square svg {
+    height: 25px;
+    width: 25px;
+    margin: 3px;
+}
+
+.square {
+    height: 50px;
+    width: 50px;
+}
+
+.beige {
+    background-color: rgb(110,110 ,98);
+}
+
+.brown {
+    background-color: rgb(169, 43, 43);
+}
+
+.green {
+    background-color: #006400;
+}
+
+.cream {
+    background-color: #fff5e1;
+}
+
+.tan {
+    background-color: #d2b48c;
+}
+
+.gray {
+    background-color: #bababa;
+}
+
+.black {
+    fill: rgb(28, 28, 28);
+}
+
+.white {
+    fill: rgb(255, 255, 255);
+}
