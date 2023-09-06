@@ -2,6 +2,14 @@ class Board {
   constructor(rows, cols) {
     this._maxRows = rows;
     this._maxCols = cols;
+    this.board = [];
+
+    for (let i = 0; i < rows; i++) {
+      this.board.push([]);
+      for (let j = 0; j < cols; j++) {
+        this.board.push(null);
+      }
+    }
   }
   /**
    *
@@ -14,6 +22,43 @@ class Board {
     if (0 <= row && row < this._maxRows && 0 <= col && col < this._maxCols)
       return true;
     else return false;
+  }
+
+  isCellEmpty(row, col) {
+    if (this.board[row][col] === null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  canCapture(row, col, player) {
+    if (this.isCellEmpty(row, col)) {
+      return false;
+    }
+
+    if (this.board[row][col].player != player) {
+        return true;
+    } else {
+      return false;
+    }
+  }
+
+  isMyPieceThereAlready(row, col, player) {
+    if (this.board[row][col].player === player) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  isCheck(row, col, player) {
+    if (this.board[row][col].player != player) {
+      if (this.board[row][col].name === "king"){
+        return true;
+      }
+    }
+    return false;
   }
 }
 
@@ -37,24 +82,56 @@ class Pawn extends Piece {
   constructor(player, row, col) {
     super(player, row, col);
     this._firstMove = true;
+    this.name = "pawn";
   }
   validCells(board) {
     const cells = [];
     const direction = this.player === "human" ? -1 : 1;
 
-    if (this._firstMove) {
-      for (let i = 1; i <= 2; i++) {
-        const newRow = this.row + i * direction;
-        const newCol = this.col;
+    const newRow = this.row + direction;
+    const newCol = this.col;
 
-        if (board.isInBoard(newRow, newCol)) {
-          cells.push({
-            row: newRow,
-            col: newCol,
-          });
-        }
+    // checks one move forward
+    if (
+      board.isInBoard(newRow, newCol) && 
+      board.isCellEmpty(newRow, newCol)) 
+    {
+      cells.push({
+        row: newRow,
+        col: newCol,
+      });
+    }
+    // the pawn can move 1 or 2 cells as it's first move
+    if (this._firstMove) {
+      const newRow2 = this.row + 2 * direction;
+
+      if (
+        board.isInBoard(newRow2, newCol) &&
+        board.isCellEmpty(newRow2, newCol)
+      ) {
+        cells.push({
+          row: newRow2,
+          col: newCol,
+        });
       }
     }
+    // diagonal movment for capturing.
+    const captureCols = [this.col - 1, this.col + 1];
+
+    for (const col of captureCols) {
+      const newRow = this.row + direction;
+
+      if (
+        board.isInBoard(newRow, col) &&
+        board.canCapture(newRow, col, this.player)
+      ) {
+        cells.push({
+          row: newRow,
+          col: col,
+        });
+      }
+    }
+
     return cells;
   }
   validMoves() {}
