@@ -156,7 +156,7 @@ class Bishop extends Piece {
       let newRow = this.row + direction.row;
       let newCol = this.col + direction.col;
 
-      // keep going if there are empty cells, stop 
+      // keep going if there are empty cells, stop
       // at the first sight of a non-empty cell
       while (
         board.isInBoard(newRow, newCol) &&
@@ -170,11 +170,51 @@ class Bishop extends Piece {
         newCol += direction.col;
       }
 
-      // if the first non-empty can be caputred, 
+      // if the first non-empty can be caputred,
       // add it to the list of valid cells
       if (
         board.isInBoard(newRow, newCol) &&
         board.canCapture(newRow, newCol, this.player)
+      ) {
+        cells.push({
+          row: newRow,
+          col: newCol,
+        });
+      }
+    }
+    return cells;
+  }
+}
+
+class Knight extends Piece {
+  constructor(player, row, col) {
+    super(player, row, col);
+    this.name = "knight";
+  }
+
+  validCells(board) {
+    const cells = [];
+    const possibleMoves = [
+      { row: +1, col: +2 },
+      { row: +1, col: -2 },
+      { row: -1, col: +2 },
+      { row: -1, col: -2 },
+      { row: +2, col: +1 },
+      { row: +2, col: -1 },
+      { row: -2, col: +1 },
+      { row: -2, col: -1 },
+    ];
+    
+    // checks each of the 8 possible moves
+    // knight moves to an empty or enemy cell.
+    for (const move of possibleMoves) {
+      const newRow = this.row + move.row;
+      const newCol = this.col + move.col;
+
+      if (
+        board.isInBoard(newRow, newCol) &&
+        (board.isCellEmpty(newRow, newCol) ||
+          board.canCapture(newRow, newCol, this.player))
       ) {
         cells.push({
           row: newRow,
