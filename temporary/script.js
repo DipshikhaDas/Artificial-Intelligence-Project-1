@@ -38,7 +38,7 @@ class Board {
     }
 
     if (this.board[row][col].player != player) {
-        return true;
+      return true;
     } else {
       return false;
     }
@@ -54,7 +54,7 @@ class Board {
 
   isCheck(row, col, player) {
     if (this.board[row][col].player != player) {
-      if (this.board[row][col].name === "king"){
+      if (this.board[row][col].name === "king") {
         return true;
       }
     }
@@ -92,10 +92,7 @@ class Pawn extends Piece {
     const newCol = this.col;
 
     // checks one move forward
-    if (
-      board.isInBoard(newRow, newCol) && 
-      board.isCellEmpty(newRow, newCol)) 
-    {
+    if (board.isInBoard(newRow, newCol) && board.isCellEmpty(newRow, newCol)) {
       cells.push({
         row: newRow,
         col: newCol,
@@ -135,4 +132,56 @@ class Pawn extends Piece {
     return cells;
   }
   validMoves() {}
+}
+
+class Bishop extends Piece {
+  constructor(player, row, col) {
+    super(player, row, col);
+    this.name = "bishop";
+  }
+
+  validCells(board) {
+    const cells = [];
+
+    // a bishop goes diagonally in 4 directions
+    const directions = [
+      { row: +1, col: +1 },
+      { row: +1, col: -1 },
+      { row: -1, col: +1 },
+      { row: -1, col: -1 },
+    ];
+
+    // calculates cells for each of the 4 directions
+    for (const direction of directions) {
+      let newRow = this.row + direction.row;
+      let newCol = this.col + direction.col;
+
+      // keep going if there are empty cells, stop 
+      // at the first sight of a non-empty cell
+      while (
+        board.isInBoard(newRow, newCol) &&
+        board.isCellEmpty(newRow, newCol)
+      ) {
+        cells.push({
+          row: newRow,
+          col: newCol,
+        });
+        newRow += direction.row;
+        newCol += direction.col;
+      }
+
+      // if the first non-empty can be caputred, 
+      // add it to the list of valid cells
+      if (
+        board.isInBoard(newRow, newCol) &&
+        board.canCapture(newRow, newCol, this.player)
+      ) {
+        cells.push({
+          row: newRow,
+          col: newCol,
+        });
+      }
+    }
+    return cells;
+  }
 }
