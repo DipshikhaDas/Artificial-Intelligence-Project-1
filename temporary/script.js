@@ -204,7 +204,7 @@ class Knight extends Piece {
       { row: -2, col: +1 },
       { row: -2, col: -1 },
     ];
-    
+
     // checks each of the 8 possible moves
     // knight moves to an empty or enemy cell.
     for (const move of possibleMoves) {
@@ -224,4 +224,56 @@ class Knight extends Piece {
     }
     return cells;
   }
+}
+
+class Rook extends Piece {
+  constructor(player, row, col) {
+    super(player, row, col);
+    this.name = "rook";
+  }
+
+  validCells(board) {
+    const cells = [];
+
+    const directions = [
+      { row: -1, col: 0 },
+      { row: +1, col: 0 },
+      { row: 0, col: -1 },
+      { row: 0, col: +1 },
+    ];
+
+    for (const direction of directions) {
+      let newRow = this.row + direction.row;
+      let newCol = this.col + direction.col;
+
+      // move forward in the selected direction
+      while (board.isInBoard(newRow, newCol)) {
+        if (board.isCellEmpty(newRow, newCol)) {
+          cells.push({
+            row: newRow,
+            col: newCol,
+          });
+        }
+        // add to valid cells if a capture cell appears.
+        // stop after the first non empty cell
+        else if (board.canCapture(newRow, newCol, this.player)) {
+          cells.push({
+            row: newRow,
+            col: newCol,
+          });
+          break;
+        }
+        // stop at the first non-empty cell
+        else {
+          break;
+        }
+
+        newRow += direction.row;
+        newCol += direction.col;
+      }
+    }
+
+    return cells;
+  }
+
 }
