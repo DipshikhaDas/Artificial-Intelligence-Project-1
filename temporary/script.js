@@ -275,5 +275,93 @@ class Rook extends Piece {
 
     return cells;
   }
+}
 
+class Queen extends Piece {
+  constructor(player, row, col) {
+    super(player, row, col);
+    this.name = "queen";
+  }
+
+  validCells(board) {
+    const cells = [];
+
+    const directions = [
+      { row: -1, col: 0 },
+      { row: +1, col: 0 },
+      { row: 0, col: -1 },
+      { row: 0, col: +1 },
+      { row: -1, col: -1 },
+      { row: -1, col: +1 },
+      { row: +1, col: -1 },
+      { row: +1, col: +1 },
+    ];
+
+    for (const direction of directions) {
+      let newRow = this.row + direction.row;
+      let newCol = this.col + direction.col;
+
+      while (board.isInBoard(newRow, newCol)) {
+        if (board.isCellEmpty(newRow, newCol)) {
+          cells.push({
+            row: newRow,
+            col: newCol,
+          });
+        } else if (board.canCapture(newRow, newCol, this.player)) {
+          cells.push({
+            row: newRow,
+            col: newCol,
+          });
+          break;
+        } else {
+          break;
+        }
+
+        newRow += direction.row;
+        newCol += direction.col;
+      }
+    }
+
+    return cells;
+  }
+}
+
+class King extends Piece {
+  constructor(player, row, col) {
+    super(player, row, col);
+    this.name = "king";
+  }
+
+  validCells(board) {
+    const cells = [];
+
+    const directions = [
+      { row: -1, col: -1 },
+      { row: -1, col: 0 },
+      { row: -1, col: 1 },
+      { row: 0, col: -1 },
+      { row: 0, col: 1 },
+      { row: 1, col: -1 },
+      { row: 1, col: 0 },
+      { row: 1, col: 1 },
+    ];
+
+    for (const direction of directions) {
+      const newRow = this.row + direction.row;
+      const newCol = this.col + direction.col;
+
+      if (
+        board.isInBoard(newRow, newCol) &&
+        (board.isCellEmpty(newRow, newCol) ||
+          board.canCapture(newRow, newCol, this.player))
+      ) {
+        cells.push({
+          row: newRow,
+          col: newCol,
+        });
+      }
+    }
+
+    return cells;
+  }
 }
