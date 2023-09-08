@@ -13,11 +13,11 @@ class Board {
   }
 
   /**
-   * 
-   * @param {Piece} piece 
-   * @param {number} row 
+   *
+   * @param {Piece} piece
+   * @param {number} row
    * @param {number} col
-   *  
+   *
    */
   addPiece(piece, row, col) {
     if (this.isInBoard(row, col)) {
@@ -25,6 +25,25 @@ class Board {
     }
   }
 
+  movePiece(fromRow, fromCol, toRow, toCol, player) {
+    if (!this.isInBoard(fromRow, fromCol) || !this.isInBoard(toRow, toCol)) {
+      // console.log("Inavalid Loations");
+      return {status: -1, message: "Invalid Locations"};
+    }
+
+    if (this.isCellEmpty(fromRow, fromCol)) {
+      return {status: -1, message: "Select a cell with a chess piece"};
+    }
+
+    if (this.board[fromRow][fromCol].player != player) {
+      return {status: -1, message: "Select your own piece"};
+    }
+
+    this.board[toRow][toCol] = this.board[fromRow][fromCol];
+    this.board[fromRow][fromCol] = null;
+
+    return {status: 0, message: "Piece Moved"};
+  }
   /**
    *
    * @param {number} row
@@ -37,7 +56,13 @@ class Board {
       return true;
     else return false;
   }
-
+  /**
+   *
+   * @param {number} row
+   * @param {number} col
+   * @returns true if (row, col) is inside of the board.
+   *
+   */
   isCellEmpty(row, col) {
     if (this.board[row][col] === null) {
       return true;
@@ -45,21 +70,20 @@ class Board {
       return false;
     }
   }
-
+  /**
+   *
+   * @param {number} row
+   * @param {number} col
+   * @param {string} player
+   * @returns true if opposition piece in (row,col) cell
+   * can be captured.
+   */
   canCapture(row, col, player) {
     if (this.isCellEmpty(row, col)) {
       return false;
     }
 
     if (this.board[row][col].player != player) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  isMyPieceThereAlready(row, col, player) {
-    if (this.board[row][col].player === player) {
       return true;
     } else {
       return false;

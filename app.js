@@ -128,16 +128,33 @@ function addPawns(board, player) {
 
 createBoard();
 
-function movePieces(fromRow, fromCol, toRow, toCol) {
-  if (
-    !board.isInBoard(fromRow, fromCol) || 
-    !board.isInBoard(toRow, toCol)
-    ) {
-    console.log("Inavalid Loations");
-    return;
-  }
+let moves = 0;
+let currentPlayer = "human";
 
-  const tempCell = document.querySelector(`[row-id="${fromRow}"][col-id="${fromCol}"]`);
-  console.log(tempCell);
-  
+function changePlayer() {
+  moves++;
+  currentPlayer = moves % 2 === 0 ? "human" : "ai";
+  infoDisplay.innerHTML = `current player: ${currentPlayer}`;
+//   console.log(infoDisplay);
+}
+
+function movePieces(fromRow, fromCol, toRow, toCol) {
+  const ret = board.movePiece(fromRow, fromCol, toRow, toCol, currentPlayer);
+  if (!ret.status) {
+    const fromCell = document.querySelector(
+      `[row-id="${fromRow}"][col-id="${fromCol}"]`
+    );
+    const toCell = document.querySelector(
+      `[row-id="${toRow}"][col-id="${toCol}"]`
+    );
+    toCell.innerHTML = "";
+    const clone = fromCell.firstChild.cloneNode(true);
+
+    toCell.appendChild(clone);
+    fromCell.innerHTML = "";
+    //   console.log(fromCell.firstChild);
+    changePlayer();
+  } else {
+    console.log(ret);
+  }
 }
