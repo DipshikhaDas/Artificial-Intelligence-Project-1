@@ -7,10 +7,24 @@ class Board {
     for (let i = 0; i < rows; i++) {
       this.board.push([]);
       for (let j = 0; j < cols; j++) {
-        this.board.push(null);
+        this.board[i].push(null);
       }
     }
   }
+
+  /**
+   * 
+   * @param {Piece} piece 
+   * @param {number} row 
+   * @param {number} col
+   *  
+   */
+  addPiece(piece, row, col) {
+    if (this.isInBoard(row, col)) {
+      this.board[row][col] = piece;
+    }
+  }
+
   /**
    *
    * @param {number} row
