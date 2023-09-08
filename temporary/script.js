@@ -3,7 +3,8 @@ class Board {
     this._maxRows = rows;
     this._maxCols = cols;
     this.board = [];
-
+    this.humanPoints = 0;
+    this.aiPoints = 0;
     for (let i = 0; i < rows; i++) {
       this.board.push([]);
       for (let j = 0; j < cols; j++) {
@@ -13,7 +14,8 @@ class Board {
   }
 
   /**
-   *
+   * adds a piece into the desired location.
+   * also adds up the points of the piece.
    * @param {Piece} piece
    * @param {number} row
    * @param {number} col
@@ -22,6 +24,12 @@ class Board {
   addPiece(piece, row, col) {
     if (this.isInBoard(row, col)) {
       this.board[row][col] = piece;
+
+      if (piece.player === "ai") {
+        this.aiPoints += piece._points;
+      } else {
+        this.humanPoints += piece._points;
+      }
     }
   }
 
@@ -121,6 +129,7 @@ class Pawn extends Piece {
     super(player, row, col);
     this._firstMove = true;
     this.name = "pawn";
+    this._points = 10;
   }
   validCells(board) {
     const cells = [];
@@ -176,6 +185,7 @@ class Bishop extends Piece {
   constructor(player, row, col) {
     super(player, row, col);
     this.name = "bishop";
+    this._points = 30;
   }
 
   validCells(board) {
@@ -228,6 +238,7 @@ class Knight extends Piece {
   constructor(player, row, col) {
     super(player, row, col);
     this.name = "knight";
+    this._points = 30;
   }
 
   validCells(board) {
@@ -268,6 +279,7 @@ class Rook extends Piece {
   constructor(player, row, col) {
     super(player, row, col);
     this.name = "rook";
+    this._points = 50;
   }
 
   validCells(board) {
@@ -319,6 +331,7 @@ class Queen extends Piece {
   constructor(player, row, col) {
     super(player, row, col);
     this.name = "queen";
+    this._points = 90;
   }
 
   validCells(board) {
@@ -368,6 +381,7 @@ class King extends Piece {
   constructor(player, row, col) {
     super(player, row, col);
     this.name = "king";
+    this._points = 900;
   }
 
   validCells(board) {
