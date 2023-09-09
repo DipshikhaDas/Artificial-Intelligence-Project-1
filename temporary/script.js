@@ -33,6 +33,15 @@ class Board {
     }
   }
 
+  /**
+   * 
+   * @param {number} fromRow 
+   * @param {number} fromCol 
+   * @param {number} toRow 
+   * @param {number} toCol 
+   * @param {string} player 
+   * @returns a status and a message
+   */
   movePiece(fromRow, fromCol, toRow, toCol, player) {
     if (!this.isInBoard(fromRow, fromCol) || !this.isInBoard(toRow, toCol)) {
       // console.log("Inavalid Loations");
@@ -46,6 +55,18 @@ class Board {
     if (this.board[fromRow][fromCol].player != player) {
       return {status: -1, message: "Select your own piece"};
     }
+
+    const fromPiece = this.board[fromRow][fromCol];
+    const validCells = fromPiece.validCells(this);
+    const toCellObject = {row: toRow, col: toCol};
+
+    console.log(toCellObject, validCells, validCells.includes(toCellObject));
+
+
+    if (!validCells.includes(toCellObject)) {
+      return {staus: -1, message: "Cannot move to an invalid cell", validCells: validCells};
+    }
+   
 
     this.board[toRow][toCol] = this.board[fromRow][fromCol];
     this.board[fromRow][fromCol] = null;
@@ -133,7 +154,7 @@ class Pawn extends Piece {
   }
   validCells(board) {
     const cells = [];
-    const direction = this.player === "human" ? -1 : 1;
+    const direction = this.player === "ai" ? -1 : 1;
 
     const newRow = this.row + direction;
     const newCol = this.col;
@@ -284,7 +305,6 @@ class Rook extends Piece {
 
   validCells(board) {
     const cells = [];
-
     const directions = [
       { row: -1, col: 0 },
       { row: +1, col: 0 },
@@ -417,3 +437,4 @@ class King extends Piece {
     return cells;
   }
 }
+  
