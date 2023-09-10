@@ -46,21 +46,24 @@ function createBoard() {
 
   startPieces.forEach((startPiece, i) => {
     const square = document.createElement("div");
+    square.setAttribute("draggable", "true");
     square.innerHTML = startPiece;
     square.setAttribute("square-id", i);
+
+    square.addEventListener("dragstart", dragStart);
 
     const row = Math.floor((29 - i) / 5);
     const col = i % 5;
 
     square.setAttribute("row-id", row);
     square.setAttribute("col-id", col);
+    square.classList.add("square");
 
     if (row % 2 === 0) {
       square.classList.add(i % 2 === 0 ? "gray" : "green");
     } else {
       square.classList.add(i % 2 === 0 ? "gray" : "green");
     }
-    square.classList.add("square");
     gameBoard.append(square);
 
     if (i <= 9) {
@@ -99,8 +102,6 @@ function addPawns(board, player) {
   }
 }
 
-createBoard();
-
 let moves = 0;
 let currentPlayer = "human";
 
@@ -111,8 +112,10 @@ function changePlayer() {
   //   console.log(infoDisplay);
 }
 
+createBoard();
+
 function movePieces(fromRow, fromCol, toRow, toCol) {
-  const ret = board.movePiece(fromRow, fromCol, toRow, toCol, currentPlayer);
+  const ret = board.movePiece(Number(fromRow), Number(fromCol), Number(toRow), Number(toCol), currentPlayer);
   if (!ret.status) {
     const fromCell = document.querySelector(
       `[row-id="${fromRow}"][col-id="${fromCol}"]`
@@ -131,6 +134,47 @@ function movePieces(fromRow, fromCol, toRow, toCol) {
     console.log(ret);
   }
 }
+
+const allSquares = document.querySelectorAll(".square");
+
+allSquares.forEach((square) => {
+  // square.addEventListener('dragstart', dragStart);
+  square.addEventListener('click', dragStart)
+})
+
+let dragStartRow, dragStartCol;
+
+function dragStart (e) {
+  const square = e.target.closest(".square");
+  dragStartRow = square.getAttribute("row-id");
+  dragStartCol = square.getAttribute("col-id");
+}
+
+allSquares.forEach((square) => {
+  square.addEventListener("dragover", allowDrop);
+});
+
+function allowDrop(e) {
+  e.preventDefault();
+}
+
+allSquares.forEach((square) => {
+  square.addEventListener("drop", dropPieces);
+});
+
+function dropPieces(e) {
+  // e.preventDefault();
+  const square = e.target.closest(".square");
+  const dropRow = square.getAttribute("row-id");
+  const dropCol = square.getAttribute("col-id");
+
+  movePieces(dragStartRow, dragStartCol, dropRow, dropCol);
+
+  // console.log(dragStartRow, dragStartCol);
+}
+
+
+
 
 const testMoves = [
   [1, 2, 3, 2], // human pawn
