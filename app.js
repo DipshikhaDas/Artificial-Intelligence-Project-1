@@ -115,7 +115,13 @@ function changePlayer() {
 createBoard();
 
 function movePieces(fromRow, fromCol, toRow, toCol) {
-  const ret = board.movePiece(Number(fromRow), Number(fromCol), Number(toRow), Number(toCol), currentPlayer);
+  const ret = board.movePiece(
+    Number(fromRow),
+    Number(fromCol),
+    Number(toRow),
+    Number(toCol),
+    currentPlayer
+  );
   if (!ret.status) {
     const fromCell = document.querySelector(
       `[row-id="${fromRow}"][col-id="${fromCol}"]`
@@ -130,6 +136,12 @@ function movePieces(fromRow, fromCol, toRow, toCol) {
     fromCell.innerHTML = "";
     //   console.log(fromCell.firstChild);
     changePlayer();
+
+    if (currentPlayer === "ai") {
+      setTimeout(function () {
+        aiMove();
+      }, 2000);
+    }
   } else {
     console.log(ret);
   }
@@ -139,12 +151,12 @@ const allSquares = document.querySelectorAll(".square");
 
 allSquares.forEach((square) => {
   // square.addEventListener('dragstart', dragStart);
-  square.addEventListener('click', dragStart)
-})
+  square.addEventListener("click", dragStart);
+});
 
 let dragStartRow, dragStartCol;
 
-function dragStart (e) {
+function dragStart(e) {
   const square = e.target.closest(".square");
   dragStartRow = square.getAttribute("row-id");
   dragStartCol = square.getAttribute("col-id");
@@ -168,13 +180,12 @@ function dropPieces(e) {
   const dropRow = square.getAttribute("row-id");
   const dropCol = square.getAttribute("col-id");
 
-  movePieces(dragStartRow, dragStartCol, dropRow, dropCol);
+  if (currentPlayer === "human") {
+    movePieces(dragStartRow, dragStartCol, dropRow, dropCol);
+  }
 
   // console.log(dragStartRow, dragStartCol);
 }
-
-
-
 
 const testMoves = [
   [1, 2, 3, 2], // human pawn
