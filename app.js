@@ -35,33 +35,6 @@ const startPieces = [
   king,
 ];
 
-// function createBoard(){
-//     startPieces.forEach((startPiece, i) =>{
-//         const square = document.createElement('div')
-//         square.innerHTML = startPiece
-//         square.setAttribute('square-id', i)
-
-//         const row = Math.floor((63-i) / 8) + 1
-
-//         if(row%2 ===0){
-//             square.classList.add(i%2 ===0 ? "green" : "gray")
-//         }else{
-//             square.classList.add(i%2 ===0 ? "gray" : "green")
-//         }
-//         square.classList.add('square')
-//         gameBoard.append(square)
-
-//         if(i<=15){
-//            square.firstChild.firstChild.classList.add('black')
-//         }
-
-//         if(i>=48){
-//             square.firstChild.firstChild.classList.add('white')
-//         }
-//     })
-// }
-
-// const board = new Board(6, 5);
 let board;
 
 function createBoard() {
@@ -134,8 +107,8 @@ let currentPlayer = "human";
 function changePlayer() {
   moves++;
   currentPlayer = moves % 2 === 0 ? "human" : "ai";
-  infoDisplay.innerHTML = `current player: ${currentPlayer}`;
-//   console.log(infoDisplay);
+  infoDisplay.innerHTML = `current player: <b>${currentPlayer}</b>`;
+  //   console.log(infoDisplay);
 }
 
 function movePieces(fromRow, fromCol, toRow, toCol) {
@@ -156,5 +129,23 @@ function movePieces(fromRow, fromCol, toRow, toCol) {
     changePlayer();
   } else {
     console.log(ret);
+  }
+}
+
+const testMoves = [
+  [1, 2, 3, 2], // human pawn
+  [4, 0, 2, 0], // ai pawn
+  [3, 2, 4, 1], // human pawn, ai in check
+];
+function test() {
+  // board.movePiece(1,3,3,3, currentPlayer);
+  const move = testMoves[moves];
+  movePieces(move[0], move[1], move[2], move[3]);
+}
+
+function test2(cnt) {
+  for (let i = 0; i < cnt; i++) {
+    const move = testMoves[i];
+    movePieces(move[0], move[1], move[2], move[3]);
   }
 }

@@ -1,10 +1,18 @@
-const MAX_DEPTH = 10;
+const MAX_DEPTH = 5;
 
-function evaluate(board, maximizingPlayer) {
-  if (maximizingPlayer) {
-    return board.humanPoints - board.aiPoints;
+function evaluate(board, player, maximizingPlayer) {
+  if (player === "human") {
+    if (maximizingPlayer) {
+        return board.aiPoints - board.humanPoints;
+    } else {
+        return board.humanPoints - board.aiPoints;
+    }
   } else {
-    return board.aiPoints - board.humanPoints;
+    if (maximizingPlayer) {
+        return board.humanPoints - board.aiPoints;
+    } else {
+        return board.aiPoints - board.humanPoints;
+    }
   }
 }
 let aiCurrentPlayer = "ai";
@@ -72,7 +80,7 @@ function aiMove() {
 
 function minimax(board, depth, alpha, beta, maximizingPlayer) {
   if (depth === 0) {
-    return evaluate(board, maximizingPlayer);
+    return evaluate(board, getAiCurrentPlayer(), maximizingPlayer);
   }
 
   const possibleMoves = board.allPossibleMoves(getAiCurrentPlayer());
