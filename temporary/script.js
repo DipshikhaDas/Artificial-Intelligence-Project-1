@@ -5,6 +5,11 @@ class Board {
     this.board = [];
     this.humanPoints = 0;
     this.aiPoints = 0;
+    this.humanInCheck = false;
+    this.aiInCheck = false;
+    this.humanCheckmate = false;
+    this.aiCheckmate = false;
+
     for (let i = 0; i < rows; i++) {
       this.board.push([]);
       for (let j = 0; j < cols; j++) {
@@ -13,6 +18,48 @@ class Board {
     }
   }
 
+  /**
+   *
+   * @returns A cloned copy of Board.
+   */
+  clone() {
+    const cloneBoard = new Board(this._maxRows, this._maxCols);
+
+    for (let row = 0; row < this._maxRows; row++) {
+      for (let col = 0; col < this._maxCols; col++) {
+        const piece = this.board[row][col];
+        if (piece) {
+          let clonePiece;
+          if (piece.name === "king") {
+            clonePiece = new King(piece.name, piece.player);
+          } else if (piece.name === "queen") {
+            clonePiece = new Queen(piece.name, piece.player);
+          } else if (piece.name === "rook") {
+            clonePiece = new Rook(piece.name, piece.player);
+          } else if (piece.name === "bishop") {
+            clonePiece = new Bishop(piece.name, piece.player);
+          } else if (piece.name === "knight") {
+            clonePiece = new Knight(piece.name, piece.player);
+          } else if (piece.name === "pawn") {
+            clonePiece = new Pawn(piece.name, piece.player);
+            clonePiece._firstMove = piece._firstMove;
+          }
+
+          clonePiece.row = piece.row;
+          clonePiece.col = piece.col;
+          cloneBoard.addPiece(clonePiece, row, col);
+        }
+      }
+    }
+    cloneBoard.humanCheckmate = this.board.humanCheckmate;
+    cloneBoard.aiCheckmate = this.board.aiCheckmate;
+    cloneBoard.humanPoints = this.board.humanPoints;
+    cloneBoard.aiPoints = this.board.aiPoints;
+    cloneBoard.humanInCheck = this.board.humanInCheck;
+    cloneBoard.aiInCheck = this.board.aiInCheck;
+
+    return cloneBoard;
+  }
   /**
    * adds a piece into the desired location.
    * also adds up the points of the piece.
@@ -34,45 +81,221 @@ class Board {
   }
 
   /**
-   * 
-   * @param {number} fromRow 
-   * @param {number} fromCol 
-   * @param {number} toRow 
-   * @param {number} toCol 
-   * @param {string} player 
+   *
+   * @param {number} fromRow
+   * @param {number} fromCol
+   * @param {number} toRow
+   * @param {number} toCol
+   * @param {string} player
    * @returns a status and a message
    */
   movePiece(fromRow, fromCol, toRow, toCol, player) {
     if (!this.isInBoard(fromRow, fromCol) || !this.isInBoard(toRow, toCol)) {
       // console.log("Inavalid Loations");
-      return {status: -1, message: "Invalid Locations"};
+      return { status: -1, message: "Invalid Locations" };
     }
 
     if (this.isCellEmpty(fromRow, fromCol)) {
-      return {status: -1, message: "Select a cell with a chess piece"};
+      return { status: -1, message: "Select a cell with a chess piece" };
     }
 
     if (this.board[fromRow][fromCol].player != player) {
-      return {status: -1, message: "Select your own piece"};
+      return { status: -1, message: "Select your own piece" };
     }
 
     const fromPiece = this.board[fromRow][fromCol];
     const validCells = fromPiece.validCells(this);
-    const toCellObject = {row: toRow, col: toCol};
+    const toCellObject = { row: toRow, col: toCol };
+    const toPiece = this.board[toRow][toCol];
+    // console.log(toCellObject, validCells, this.isMoveValid(toCellObject, validCells));
 
-    console.log(toCellObject, validCells, validCells.includes(toCellObject));
+    // console.log(fromPiece);
 
-
-    if (!validCells.includes(toCellObject)) {
-      return {staus: -1, message: "Cannot move to an invalid cell", validCells: validCells};
+    if (!this.isMoveValid(toCellObject, validCells)) {
+      return {
+        status: -1,
+        message: "Cannot move to an invalid cell",
+        validCells: validCells,
+      };
     }
-   
 
+    const oppositionPlayer = this._getOppositionPlayer(player);
+    if (!this.isCellEmpty(toRow, toCol) && toPiece.name === "king") {
+      return { status: -1, message: "Cannot Capture King" };
+    }
+    if (fromPiece.name === "king") {
+      // your king will be in check
+      if (this.willKingBeInCheck(toRow, toCol, oppositionPlayer)) {
+        return {
+          status: -1,
+          message: "Your king will be in check if you move to this location",
+        };
+      }
+    }
+
+    const temp1 = this.board[fromRow][fromCol];
+    const temp2 = this.board[toRow][toCol];
+
+    this.board[toRow][toCol] = temp1;
+    this.board[fromRow][fromCol] = null;
+
+    temp1.row = toRow;
+    temp1.col = toCol;
+
+    const isMyKingInCheck = this.myKingIncheck(player);
+
+    this.board[fromRow][fromCol] = temp1;
+    this.board[toRow][toCol] = temp2;
+    temp1.row = fromRow;
+    temp1.col = fromCol;
+
+    if (isMyKingInCheck) {
+      return {
+        status: -1,
+        message: "Your king will be in check if you make this move",
+      };
+    }
+    this.setCheckStatus(player, false);
+    if (this.getPlayerPoins(player) < 900) {
+      this.restoreKingPoints(player);
+    }
+
+    this._movePiece(fromRow, fromCol, toRow, toCol, oppositionPlayer);
+
+    return { status: 0, message: "Piece Moved" };
+  }
+
+  /**
+   *
+   * @param {string} player
+   * @returns {Array} All possible moves of a player.
+   */
+  allPossibleMoves(player) {
+    const posisbleMoves = [];
+
+    for (let i = 0; i < this._maxRows; i++) {
+      for (let j = 0; j < this._maxCols; j++) {
+        if (!this.isCellEmpty(i, j)) {
+          if (this.board[i][j].player === player) {
+            let moves = this.board[i][j].validCells(this);
+            moves.forEach((move) => {
+              posisbleMoves.push({
+                fromRow: i,
+                fromCol: j,
+                toRow: move.row,
+                toCol: move.col,
+              });
+            });
+          }
+        }
+      }
+    }
+
+    return posisbleMoves;
+  }
+
+  willKingBeInCheck(toRow, toCol, oppositionPlayer) {
+    const oppositionPossibleMoves = this.allPossibleMoves(oppositionPlayer);
+    for (const oppositionMove of oppositionPossibleMoves) {
+      if (toRow === oppositionMove.toRow && toCol === oppositionMove.toCol) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  setOppositionInCheckTrue(piece, oppositionPlayer) {
+    // console.log(piece);
+    const moves = piece.validCells(this);
+    // console.log(moves);
+
+    for (const move of moves) {
+      if (!this.isCellEmpty(move.row, move.col)) {
+        if (this.board[move.row][move.col].name === "king") {
+          this.setCheckStatus(oppositionPlayer, true);
+          this.reducePoints(this.board[move.row][move.col]);
+        }
+      }
+    }
+  }
+
+  capturePiece(row, col, player) {
+    if (!this.isCellEmpty(row, col)){
+      if (this.board[row][col] != player) {
+        this.reducePoints(this.board[row][col])
+      }
+    }
+  }
+
+  reducePoints(piece) {
+    if (piece.player === "human") {
+      this.humanPoints -= piece._points;
+    } else {
+      this.aiPoints -= piece._points;
+    }
+  }
+
+  restoreKingPoints(player) {
+    if (player === "human") {
+      this.humanPoints += 900;
+    } else {
+      this.aiPoints += 900;
+    }
+  }
+  getCheckStatus(player) {
+    if (player === "human") {
+      return this.humanInCheck;
+    } else {
+      return this.aiInCheck;
+    }
+  }
+  setCheckStatus(player, status) {
+    if (player === "human") {
+      this.humanInCheck = status;
+    } else {
+      this.aiInCheck = status;
+    }
+  }
+  /**
+   *
+   * @param {number} fromRow
+   * @param {number} fromCol
+   * @param {number} toRow
+   * @param {number} toCol
+   */
+  _movePiece(fromRow, fromCol, toRow, toCol, oppositionPlayer) {
+    //reduce points if the piece can be captured.
+    this.capturePiece(toRow, toCol, player);
+
+    // moving the piece in the board.
     this.board[toRow][toCol] = this.board[fromRow][fromCol];
     this.board[fromRow][fromCol] = null;
 
-    return {status: 0, message: "Piece Moved"};
+    //changing the coordiantes of the moved piece.
+    this.board[toRow][toCol].row = toRow;
+    this.board[toRow][toCol].col = toCol;
+
+    if (this.board[toRow][toCol]._firstMove) {
+      this.board[toRow][toCol]._firstMove = false;
+    }
+
+    this.setOppositionInCheckTrue(this.board[toRow][toCol], oppositionPlayer);
   }
+  /**
+   *
+   * @param {{row:number, col:number}} targetCell
+   * @param {Array<{row:number, col: number}>} validCells
+   * @returns true if the target cell is valid.
+   */
+  isMoveValid(targetCell, validCells) {
+    for (const cell of validCells) {
+      if (targetCell.row === cell.row && targetCell.col === cell.col) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    *
    * @param {number} row
@@ -127,6 +350,50 @@ class Board {
     }
     return false;
   }
+
+  myKingIncheck(player) {
+    let kingPos = null;
+
+    for (let i = 0; i < this._maxRows; i++) {
+      for (let j = 0; j < this._maxCols; j++) {
+        const piece = this.board[i][j];
+        if (piece) {
+          if (piece.name === "king" && piece.player === player) {
+            kingPos = { row: i, col: j };
+            break;
+          }
+        }
+      }
+      if (kingPos) {
+        break;
+      }
+    }
+
+    const oppositionPossibleMoves = this.allPossibleMoves(
+      this._getOppositionPlayer(player)
+    );
+    for (const move of oppositionPossibleMoves) {
+      if (move.toRow === kingPos.row && move.toCol === kingPos.col) {
+        // this.setCheckStatus(player, true);
+        return true;
+      }
+    }
+
+    // this.setCheckStatus(player, false);
+    return false;
+  }
+
+  _getOppositionPlayer(player) {
+    return player === "human" ? "ai" : "human";
+  }
+
+  getPlayerPoins(player) {
+    if (player === "human") {
+      return this.humanPoints;
+    } else {
+      return this.aiPoints;
+    }
+  }
 }
 
 class Piece {
@@ -143,6 +410,8 @@ class Piece {
   validCells(board) {
     return [];
   }
+
+  // moveToCell()
 }
 
 class Pawn extends Piece {
@@ -437,4 +706,3 @@ class King extends Piece {
     return cells;
   }
 }
-  
