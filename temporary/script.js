@@ -31,17 +31,17 @@ class Board {
         if (piece) {
           let clonePiece;
           if (piece.name === "king") {
-            clonePiece = new King(piece.name, piece.player);
+            clonePiece = new King(piece.player, piece.row, piece.col);
           } else if (piece.name === "queen") {
-            clonePiece = new Queen(piece.name, piece.player);
+            clonePiece = new Queen(piece.player, piece.row, piece.col);
           } else if (piece.name === "rook") {
-            clonePiece = new Rook(piece.name, piece.player);
+            clonePiece = new Rook(piece.player, piece.row, piece.col);
           } else if (piece.name === "bishop") {
-            clonePiece = new Bishop(piece.name, piece.player);
+            clonePiece = new Bishop(piece.player, piece.row, piece.col);
           } else if (piece.name === "knight") {
-            clonePiece = new Knight(piece.name, piece.player);
+            clonePiece = new Knight(piece.player, piece.row, piece.col);
           } else if (piece.name === "pawn") {
-            clonePiece = new Pawn(piece.name, piece.player);
+            clonePiece = new Pawn(piece.player, piece.row, piece.colr);
             clonePiece._firstMove = piece._firstMove;
           }
 
@@ -51,12 +51,12 @@ class Board {
         }
       }
     }
-    cloneBoard.humanCheckmate = this.board.humanCheckmate;
-    cloneBoard.aiCheckmate = this.board.aiCheckmate;
-    cloneBoard.humanPoints = this.board.humanPoints;
-    cloneBoard.aiPoints = this.board.aiPoints;
-    cloneBoard.humanInCheck = this.board.humanInCheck;
-    cloneBoard.aiInCheck = this.board.aiInCheck;
+    cloneBoard.humanCheckmate = this.humanCheckmate;
+    cloneBoard.aiCheckmate = this.aiCheckmate;
+    cloneBoard.humanPoints = this.humanPoints;
+    cloneBoard.aiPoints = this.aiPoints;
+    cloneBoard.humanInCheck = this.humanInCheck;
+    cloneBoard.aiInCheck = this.aiInCheck;
 
     return cloneBoard;
   }
