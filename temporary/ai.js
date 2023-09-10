@@ -1,20 +1,30 @@
-const MAX_DEPTH = 5;
+const MAX_DEPTH = 7;
 
 function evaluate(board, player, maximizingPlayer) {
-  if (player === "human") {
-    if (maximizingPlayer) {
-        return board.aiPoints - board.humanPoints;
+//   if (player === "human") {
+//     if (maximizingPlayer) {
+//         return board.evaluatePoints("human") - board.evaluatePoints("ai");
+//     } else {
+//         return board.evaluatePoints("ai") - board.evaluatePoints("human");
+//     }
+//   } else {
+//     if (maximizingPlayer) {
+//         return board.evaluatePoints("ai") - board.evaluatePoints("human");
+//     } else {
+//         return board.evaluatePoints("human") - board.evaluatePoints("ai");
+//     }
+//   }
+    // return board.evaluatePoints(player);
+
+    if (player === "human") {
+        return board.evaluatePoints("human") - board.evaluatePoints("ai");
     } else {
-        return board.humanPoints - board.aiPoints;
+        return board.evaluatePoints("ai") - board.evaluatePoints("human");
     }
-  } else {
-    if (maximizingPlayer) {
-        return board.humanPoints - board.aiPoints;
-    } else {
-        return board.aiPoints - board.humanPoints;
-    }
-  }
 }
+
+
+
 let aiCurrentPlayer = "ai";
 
 function changeAiCurrentPlayer(player) {

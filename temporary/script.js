@@ -221,8 +221,10 @@ class Board {
 
   capturePiece(row, col, player) {
     if (!this.isCellEmpty(row, col)){
-      if (this.board[row][col] != player) {
-        this.reducePoints(this.board[row][col])
+      // console.log(this.board[row][col]);
+      if (this.board[row][col].player === player) {
+        this.reducePoints(this.board[row][col]);
+        
       }
     }
   }
@@ -230,8 +232,10 @@ class Board {
   reducePoints(piece) {
     if (piece.player === "human") {
       this.humanPoints -= piece._points;
+      this.aiPoints += piece._points;
     } else {
       this.aiPoints -= piece._points;
+      this.humanPoints += piece._points;
     }
   }
 
@@ -265,7 +269,8 @@ class Board {
    */
   _movePiece(fromRow, fromCol, toRow, toCol, oppositionPlayer) {
     //reduce points if the piece can be captured.
-    this.capturePiece(toRow, toCol, player);
+    // console.log(oppositionPlayer);
+    this.capturePiece(toRow, toCol, oppositionPlayer);
 
     // moving the piece in the board.
     this.board[toRow][toCol] = this.board[fromRow][fromCol];
@@ -392,6 +397,46 @@ class Board {
       return this.humanPoints;
     } else {
       return this.aiPoints;
+    }
+  }
+  
+  evaluatePoints(player) {
+    let score = 0;
+
+    for (let row = 0; row < this._maxRows; row++) {
+      for (let col = 0; col < this._maxCols; col++){
+        if (!this.isCellEmpty(row, col)) {
+          const piece = this.board[row][col];
+          if (piece.player === player) {
+            score += this.piecePositionPoints(row, col);
+            if (piece.name === "king") {
+              score += this.kingPoints(row, col);
+            } 
+          }
+        }
+      }
+    }
+
+    return score + this.getPlayerPoins(player);
+  }
+  piecePositionPoints(row, col) {
+    const centralizationPoints = this.isCentralized(row, col) ? 5 : 0;
+    return centralizationPoints;
+  }
+
+  isCentralized(row, col) {
+    if ((1 < row && row < 4) && (0 < col && col <4)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  kingPoints(row, col) {
+    if (this.isCentralized(row, col)) {
+      return -5;
+    } else {
+      return 0;
     }
   }
 }
