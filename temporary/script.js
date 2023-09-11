@@ -125,7 +125,7 @@ class Board {
     }
     if (fromPiece.name === "king") {
       // your king will be in check
-      if (this.willKingBeInCheck(toRow, toCol, oppositionPlayer)) {
+      if (this.willKingBeInCheck(fromRow, fromCol, toRow, toCol, oppositionPlayer)) {
         return {
           status: -1,
           message: "Your king will be in check if you move to this location",
@@ -194,13 +194,26 @@ class Board {
     return posisbleMoves;
   }
 
-  willKingBeInCheck(toRow, toCol, oppositionPlayer) {
-    const oppositionPossibleMoves = this.allPossibleMoves(oppositionPlayer);
-    for (const oppositionMove of oppositionPossibleMoves) {
-      if (toRow === oppositionMove.toRow && toCol === oppositionMove.toCol) {
-        return true;
+  willKingBeInCheck(fromRow, fromCol, toRow, toCol, oppositionPlayer) {
+    const tempBoard = this.clone();
+    if(!tempBoard.isCellEmpty(toRow, toCol)) {
+      tempBoard.board[toRow][toCol] = tempBoard.board[fromRow][fromCol];
+      tempBoard.board[fromRow][fromCol] = null;
+
+      const oppositionPossibleMoves = tempBoard.allPossibleMoves(oppositionPlayer);
+      for (const oppositionMove of oppositionPossibleMoves) {
+        if (toRow === oppositionMove.toRow && toCol === oppositionMove.toCol){
+          return true;
+        }
       }
+      return false;
     }
+    // const oppositionPossibleMoves = this.allPossibleMoves(oppositionPlayer);
+    // for (const oppositionMove of oppositionPossibleMoves) {
+    //   if (toRow === oppositionMove.toRow && toCol === oppositionMove.toCol) {
+    //     return true;
+    //   }
+    // }
     return false;
   }
 
@@ -232,7 +245,7 @@ class Board {
   reducePoints(piece) {
     if (piece.player === "human") {
       this.humanPoints -= piece._points;
-      this.aiPoints += piece._points;
+      this.aiPoints += 3*piece._points;
     } else {
       this.aiPoints -= piece._points;
       this.humanPoints += piece._points;
