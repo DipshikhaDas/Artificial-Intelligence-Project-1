@@ -125,7 +125,9 @@ class Board {
     }
     if (fromPiece.name === "king") {
       // your king will be in check
-      if (this.willKingBeInCheck(toRow, toCol, oppositionPlayer)) {
+      if (
+        this.willKingBeInCheck(fromRow, fromCol, toRow, toCol, oppositionPlayer)
+      ) {
         return {
           status: -1,
           message: "Your king will be in check if you move to this location",
@@ -194,13 +196,27 @@ class Board {
     return posisbleMoves;
   }
 
-  willKingBeInCheck(toRow, toCol, oppositionPlayer) {
-    const oppositionPossibleMoves = this.allPossibleMoves(oppositionPlayer);
-    for (const oppositionMove of oppositionPossibleMoves) {
-      if (toRow === oppositionMove.toRow && toCol === oppositionMove.toCol) {
-        return true;
+  willKingBeInCheck(fromRow, fromCol, toRow, toCol, oppositionPlayer) {
+    const tempBoard = this.clone();
+    if (!tempBoard.isCellEmpty(toRow, toCol)) {
+      tempBoard.board[toRow][toCol] = tempBoard.board[fromRow][fromCol];
+      tempBoard.board[fromRow][fromCol] = null;
+
+      const oppositionPossibleMoves =
+        tempBoard.allPossibleMoves(oppositionPlayer);
+      for (const oppositionMove of oppositionPossibleMoves) {
+        if (toRow === oppositionMove.toRow && toCol === oppositionMove.toCol) {
+          return true;
+        }
       }
+      return false;
     }
+    // const oppositionPossibleMoves = this.allPossibleMoves(oppositionPlayer);
+    // for (const oppositionMove of oppositionPossibleMoves) {
+    //   if (toRow === oppositionMove.toRow && toCol === oppositionMove.toCol) {
+    //     return true;
+    //   }
+    // }
     return false;
   }
 
@@ -220,11 +236,10 @@ class Board {
   }
 
   capturePiece(row, col, player) {
-    if (!this.isCellEmpty(row, col)){
+    if (!this.isCellEmpty(row, col)) {
       // console.log(this.board[row][col]);
       if (this.board[row][col].player === player) {
         this.reducePoints(this.board[row][col]);
-        
       }
     }
   }
@@ -232,7 +247,7 @@ class Board {
   reducePoints(piece) {
     if (piece.player === "human") {
       this.humanPoints -= piece._points;
-      this.aiPoints += piece._points;
+      this.aiPoints += 3 * piece._points;
     } else {
       this.aiPoints -= piece._points;
       this.humanPoints += piece._points;
@@ -399,19 +414,19 @@ class Board {
       return this.aiPoints;
     }
   }
-  
+
   evaluatePoints(player) {
     let score = 0;
 
     for (let row = 0; row < this._maxRows; row++) {
-      for (let col = 0; col < this._maxCols; col++){
+      for (let col = 0; col < this._maxCols; col++) {
         if (!this.isCellEmpty(row, col)) {
           const piece = this.board[row][col];
           if (piece.player === player) {
             score += this.piecePositionPoints(row, col);
             if (piece.name === "king") {
               score += this.kingPoints(row, col);
-            } 
+            }
           }
         }
       }
@@ -425,7 +440,7 @@ class Board {
   }
 
   isCentralized(row, col) {
-    if ((1 < row && row < 4) && (0 < col && col <4)) {
+    if (1 < row && row < 4 && 0 < col && col < 4) {
       return true;
     } else {
       return false;
@@ -438,6 +453,233 @@ class Board {
     } else {
       return 0;
     }
+  }
+
+  newEvalFunction(player) {
+    const newPoints = {
+      king: 200,
+      queen: 9,
+      rook: 5,
+      bishop: 3,
+      knight: 3,
+      pawn: 1,
+    };
+
+    let score = 0;
+    let cnt = 0;
+    for (let row = 0; row < this._maxRows; row++) {
+      for (let col = 0; col < this._maxCols; col++) {
+        const piece = this.board[row][col];
+
+        if (piece) {
+          cnt++;
+          if (piece.player === player) {
+            score += newPoints[piece.name];
+          } else {
+            score -= newPoints[piece.name];
+          }
+        }
+      }
+    }
+
+    // score -=
+    //   0.5 *
+    //   (this.countDoublePawn(player) -
+    //     this.countDoublePawn(this._getOppositionPlayer(player)));
+
+    // score -=
+    //   0.5 *
+    //   (this.countIsolatedPawns(player) -
+    //     this.countIsolatedPawns(this._getOppositionPlayer(player)));
+
+    // score -=
+    //   0.5 *
+    //   (this.countBackwardPawns(player) -
+    //     this.countBackwardPawns(this._getOppositionPlayer(player)));
+
+    // console.log("piece cnt", cnt);
+    score +=
+      0.1 *
+      (this.allPossibleMoves(player).length -
+        this.allPossibleMoves(this._getOppositionPlayer(player)).length);
+
+    return score;
+  }
+
+  countDoublePawn(player) {
+    let cnt = 0;
+    for (let col = 0; col < this._maxCols; col++) {
+      let isPawn = false;
+      for (let row = 0; row < this._maxRows; row++) {
+        if (this.isCellEmpty(row, col)) {
+          isPawn = false;
+        } else {
+          const piece = this.board[row][col];
+          if (this.isPiecePawn(piece)) {
+            if (piece.player === player) {
+              if (isPawn) {
+                cnt++;
+              }
+              isPawn = true;
+            } else {
+              isPawn = false;
+            }
+          } else {
+            isPawn = false;
+          }
+        }
+      }
+    }
+    return cnt;
+  }
+
+  isPiecePawn(piece) {
+    return piece.name === "pawn";
+  }
+
+  countIsolatedPawns(player) {
+    let isolatedPawnCount = 0;
+
+    for (let col = 0; col < this._maxCols; col++) {
+      for (let row = 0; row < this._maxRows; row++) {
+        if (!this.isCellEmpty(row, col)) {
+          const piece = this.board[row][col];
+
+          if (this.isPiecePawn(piece) && piece.player === player) {
+            const leftFile = col - 1;
+            const rightFile = col + 1;
+
+            let adjacentPawns = false;
+
+            if (leftFile >= 0) {
+              for (
+                let adjacentRow = 0;
+                adjacentRow < this._maxRows;
+                adjacentRow++
+              ) {
+                if (!this.isCellEmpty(adjacentRow, leftFile)) {
+                  const adjacentPiece = this.board[adjacentRow][leftFile];
+                  if (
+                    this.isPiecePawn(adjacentPiece) &&
+                    adjacentPiece.player === player
+                  ) {
+                    adjacentPawns = true;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (rightFile < this._maxCols && !adjacentPawns) {
+              for (
+                let adjacentRow = 0;
+                adjacentRow < this._maxRows;
+                adjacentRow++
+              ) {
+                if (!this.isCellEmpty(adjacentRow, rightFile)) {
+                  const adjacentPiece = this.board[adjacentRow][rightFile];
+                  if (
+                    this.isPiecePawn(adjacentPiece) &&
+                    adjacentPiece.player === player
+                  ) {
+                    adjacentPawns = true;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (!adjacentPawns) {
+              isolatedPawnCount++;
+            }
+          }
+        }
+      }
+    }
+
+    return isolatedPawnCount;
+  }
+  countBackwardPawns(player) {
+    let backwardPawnCount = 0;
+
+    for (let col = 0; col < this._maxCols; col++) {
+      for (let row = 0; row < this._maxRows; row++) {
+        if (!this.isCellEmpty(row, col)) {
+          const piece = this.board[row][col];
+
+          if (this.isPiecePawn(piece) && piece.player === player) {
+            const sameFile = col;
+            const leftFile = col - 1;
+            const rightFile = col + 1;
+
+            let friendlyPawnsBehind = false;
+
+            if (row < this._maxRows - 1) {
+              for (
+                let adjacentRow = row + 1;
+                adjacentRow < this._maxRows;
+                adjacentRow++
+              ) {
+                if (!this.isCellEmpty(adjacentRow, sameFile)) {
+                  const adjacentPiece = this.board[adjacentRow][sameFile];
+                  if (
+                    this.isPiecePawn(adjacentPiece) &&
+                    adjacentPiece.player === player
+                  ) {
+                    friendlyPawnsBehind = true;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (leftFile >= 0 && !friendlyPawnsBehind) {
+              for (
+                let adjacentRow = row + 1;
+                adjacentRow < this._maxRows;
+                adjacentRow++
+              ) {
+                if (!this.isCellEmpty(adjacentRow, leftFile)) {
+                  const adjacentPiece = this.board[adjacentRow][leftFile];
+                  if (
+                    this.isPiecePawn(adjacentPiece) &&
+                    adjacentPiece.player === player
+                  ) {
+                    friendlyPawnsBehind = true;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (rightFile < this._maxCols && !friendlyPawnsBehind) {
+              for (
+                let adjacentRow = row + 1;
+                adjacentRow < this._maxRows;
+                adjacentRow++
+              ) {
+                if (!this.isCellEmpty(adjacentRow, rightFile)) {
+                  const adjacentPiece = this.board[adjacentRow][rightFile];
+                  if (
+                    this.isPiecePawn(adjacentPiece) &&
+                    adjacentPiece.player === player
+                  ) {
+                    friendlyPawnsBehind = true;
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (!friendlyPawnsBehind) {
+              backwardPawnCount++;
+            }
+          }
+        }
+      }
+    }
+
+    return backwardPawnCount;
   }
 }
 

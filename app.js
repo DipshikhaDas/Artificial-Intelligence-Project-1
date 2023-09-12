@@ -1,6 +1,7 @@
 const gameBoard = document.querySelector("#gameboard");
 const playerDisplay = document.querySelector("#pieces");
 const infoDisplay = document.querySelector("#info-display");
+const msg = document.querySelector("#msg");
 
 const startPieces = [
   king,
@@ -107,8 +108,9 @@ let currentPlayer = "human";
 
 function changePlayer() {
   moves++;
-  currentPlayer = moves % 2 === 0 ? "human" : "ai";
+  currentPlayer = moves % 2 == 0 ? "human" : "ai";
   infoDisplay.innerHTML = `current player: <b>${currentPlayer}</b>`;
+  msg.innerHTML = '';
   //   console.log(infoDisplay);
 }
 
@@ -140,10 +142,14 @@ function movePieces(fromRow, fromCol, toRow, toCol) {
     if (currentPlayer === "ai") {
       setTimeout(function () {
         aiMove();
-      }, 2000);
+      }, 2);
     }
+    // if (currentPlayer === "human") {
+    //     aiMove();
+    // }
   } else {
     console.log(ret);
+    msg.innerHTML = ret.message;
   }
 }
 
