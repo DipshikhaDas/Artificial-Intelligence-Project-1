@@ -1,5 +1,4 @@
 
-
 #gameboard {
     width: 250px;
     height: 300px;
@@ -13,6 +12,8 @@
     height: 25px;
     width: 25px;
     margin: 3px;
+    padding-left: 17%;
+    padding-top: 15%;
 }
 
 .square {
@@ -20,24 +21,9 @@
     width: 50px;
 }
 
-.beige {
-    background-color: rgb(110,110 ,98);
-}
-
-.brown {
-    background-color: rgb(169, 43, 43);
-}
 
 .green {
     background-color: #006400;
-}
-
-.cream {
-    background-color: #fff5e1;
-}
-
-.tan {
-    background-color: #d2b48c;
 }
 
 .gray {

@@ -1,29 +1,15 @@
-const MAX_DEPTH = 7;
+const MAX_DEPTH = 5;
 
 function evaluate(board, player, maximizingPlayer) {
+
 //   if (player === "human") {
-//     if (maximizingPlayer) {
-//         return board.evaluatePoints("human") - board.evaluatePoints("ai");
-//     } else {
-//         return board.evaluatePoints("ai") - board.evaluatePoints("human");
-//     }
+//     return board.evaluatePoints("human") - board.evaluatePoints("ai");
 //   } else {
-//     if (maximizingPlayer) {
-//         return board.evaluatePoints("ai") - board.evaluatePoints("human");
-//     } else {
-//         return board.evaluatePoints("human") - board.evaluatePoints("ai");
-//     }
+//     return board.evaluatePoints("ai") - board.evaluatePoints("human");
 //   }
-    // return board.evaluatePoints(player);
 
-    if (player === "human") {
-        return board.evaluatePoints("human") - board.evaluatePoints("ai");
-    } else {
-        return board.evaluatePoints("ai") - board.evaluatePoints("human");
-    }
+    return board.newEvalFunction(player);
 }
-
-
 
 let aiCurrentPlayer = "ai";
 
@@ -80,12 +66,28 @@ function aiMove() {
   console.log(bestMoves);
   const bestMove = bestMoves[idx];
   console.log(bestMove);
-  movePieces(
-    bestMove.fromRow,
-    bestMove.fromCol,
-    bestMove.toRow,
-    bestMove.toCol
-  );
+  console.log(len);
+
+//   if (aiCurrentPlayer != currentPlayer) {
+//     aiMove();
+//   }
+  if (currentPlayer === "ai") {
+    if (!len) {
+        alert("You've won");
+    }
+    movePieces(
+      bestMove.fromRow,
+      bestMove.fromCol,
+      bestMove.toRow,
+      bestMove.toCol
+    );
+  }
+
+  else if (currentPlayer === "human") {
+    if (!len) {
+        alert("You've Lost");
+    }
+  }
 }
 
 function minimax(board, depth, alpha, beta, maximizingPlayer) {
