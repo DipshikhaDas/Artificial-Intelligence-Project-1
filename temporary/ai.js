@@ -1,4 +1,4 @@
-const MAX_DEPTH = 6;
+const MAX_DEPTH = 5;
 
 function evaluate(board, player, maximizingPlayer) {
 
