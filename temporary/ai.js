@@ -1,12 +1,14 @@
-const MAX_DEPTH = 5;
+const MAX_DEPTH = 6;
 
 function evaluate(board, player, maximizingPlayer) {
 
-  if (player === "human") {
-    return board.evaluatePoints("human") - board.evaluatePoints("ai");
-  } else {
-    return board.evaluatePoints("ai") - board.evaluatePoints("human");
-  }
+//   if (player === "human") {
+//     return board.evaluatePoints("human") - board.evaluatePoints("ai");
+//   } else {
+//     return board.evaluatePoints("ai") - board.evaluatePoints("human");
+//   }
+
+    return board.newEvalFunction(player);
 }
 
 let aiCurrentPlayer = "ai";
@@ -65,7 +67,11 @@ function aiMove() {
   const bestMove = bestMoves[idx];
   console.log(bestMove);
   console.log(len);
-  if (aiCurrentPlayer === "ai") {
+
+//   if (aiCurrentPlayer != currentPlayer) {
+//     aiMove();
+//   }
+  if (currentPlayer === "ai") {
     if (!len) {
         alert("You've won");
     }
@@ -77,7 +83,7 @@ function aiMove() {
     );
   }
 
-  if (aiCurrentPlayer === "human") {
+  else if (currentPlayer === "human") {
     if (!len) {
         alert("You've Lost");
     }
